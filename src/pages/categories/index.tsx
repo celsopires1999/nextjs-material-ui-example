@@ -4,6 +4,8 @@ import { Button, Typography, Link as MuiLink } from "@mui/material";
 import { DataGrid, GridColumns } from "@mui/x-data-grid";
 import Link from "next/link";
 import { isActive } from "../../utils/helpers";
+import { withIronSessionSsr } from "iron-session/next";
+import ironConfig from "../../utils/iron-config";
 
 type CategoriesProps = { categories: any[] };
 const CategoriesPage: React.FunctionComponent<CategoriesProps> = (props) => {
@@ -56,24 +58,37 @@ const CategoriesPage: React.FunctionComponent<CategoriesProps> = (props) => {
         pageSize={5}
         rowsPerPageOptions={[5]}
       />
-      <div>
-        <Button variant="contained">Contained</Button>
-      </div>
     </div>
   );
 };
 
 export default CategoriesPage;
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { data } = await axios.get(
-    "http://host.docker.internal:3000/categories"
-  );
-  const { items } = data;
+export const getServerSideProps: GetServerSideProps = withIronSessionSsr(
+  async (context) => {
+    const account = context.req.session.account;
+    if (!account) {
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+    const { data } = await axios.get(
+      "http://host.docker.internal:3001/api/categories",
+      {
+        headers: { cookie: context.req.headers.cookie as string },
+      }
+    );
 
-  return {
-    props: {
-      categories: items,
-    },
-  };
-};
+    const { items } = data;
+
+    return {
+      props: {
+        categories: items,
+      },
+    };
+  },
+  ironConfig
+);

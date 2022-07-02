@@ -24,8 +24,6 @@ async function login(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function _get(token: string): Promise<any> {
-  console.log(token);
-
   if (token !== "palmeirasforever") {
     throw new Error("Unauthorized");
   }

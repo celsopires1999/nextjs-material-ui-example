@@ -1,7 +1,7 @@
 import { GetStaticPaths, GetStaticProps } from "next";
 import axios from "axios";
 import useSWR from "swr";
-import { useRouter } from "next/router";
+import Router, { useRouter } from "next/router";
 import {
   Box,
   Card,
@@ -17,9 +17,16 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 const CategoriesShowPage: React.FunctionComponent = () => {
   const router = useRouter();
   const { id } = router.query;
-  const { data, error } = useSWR(
-    `http://host.docker.internal:3000/categories/${id}`,
-    fetcher
+  const { data, error: _error } = useSWR(
+    `http://host.docker.internal:3001/api/categories/${id}`,
+    fetcher,
+    {
+      onError: (error) => {
+        if (error.response.status === 401 || error.response.status === 403) {
+          Router.push("/login");
+        }
+      },
+    }
   );
 
   return data ? (
