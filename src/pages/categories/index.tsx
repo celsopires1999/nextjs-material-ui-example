@@ -1,11 +1,12 @@
 import { GetServerSideProps } from "next";
 import axios from "axios";
-import { Button, Typography, Link as MuiLink } from "@mui/material";
+import { Typography, Link as MuiLink } from "@mui/material";
 import { DataGrid, GridColumns } from "@mui/x-data-grid";
 import Link from "next/link";
 import { isActive } from "../../utils/helpers";
 import { withIronSessionSsr } from "iron-session/next";
 import ironConfig from "../../utils/iron-config";
+import { format, parseISO } from "date-fns";
 
 type CategoriesProps = { categories: any[] };
 const CategoriesPage: React.FunctionComponent<CategoriesProps> = (props) => {
@@ -43,6 +44,7 @@ const CategoriesPage: React.FunctionComponent<CategoriesProps> = (props) => {
       field: "created_at",
       headerName: "Created At",
       width: 200,
+      valueFormatter: (params) => format(parseISO(params.value), "dd/MM/yyyy"),
     },
   ];
   return (
@@ -76,7 +78,7 @@ export const getServerSideProps: GetServerSideProps = withIronSessionSsr(
       };
     }
     const { data } = await axios.get(
-      "http://host.docker.internal:3001/api/categories",
+      `${process.env.NEXT_PUBLIC_API_HOST}/categories`,
       {
         headers: { cookie: context.req.headers.cookie as string },
       }

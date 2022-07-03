@@ -18,7 +18,7 @@ const CategoriesShowPage: React.FunctionComponent = () => {
   const router = useRouter();
   const { id } = router.query;
   const { data, error: _error } = useSWR(
-    `http://host.docker.internal:3001/api/categories/${id}`,
+    `${process.env.NEXT_PUBLIC_API_HOST}/categories/${id}`,
     fetcher,
     {
       onError: (error) => {

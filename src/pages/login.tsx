@@ -11,9 +11,8 @@ const LoginPage: React.FunctionComponent<LoginProps> = (_props) => {
     event.preventDefault();
 
     const token = (document.querySelector("#token") as HTMLInputElement).value;
-
     try {
-      await axios.post(`http://host.docker.internal:3001/api/login`, { token });
+      await axios.post(`${process.env.NEXT_PUBLIC_API_HOST}/login`, { token });
       router.push("/categories");
     } catch (e) {
       console.error(e);

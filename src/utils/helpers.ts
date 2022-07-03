@@ -15,13 +15,13 @@ export async function categoriesApi(
   if (!account) {
     return res.status(401).json({ message: "Unauthenticated" });
   }
-  let targetUrl = `http://host.docker.internal:3000/categories`;
+  let targetUrl = `${process.env.NEST_API_HOST}/categories`;
 
   if (listOrShow === "show") {
     const { id } = req.query;
     targetUrl = `${targetUrl}/${id}`;
   }
-  //   `${process.env.NEST_API_HOST}/categories/${id}`,
+
   try {
     const { data } = await axios.get(targetUrl, {
       headers: {
