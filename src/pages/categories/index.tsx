@@ -7,10 +7,13 @@ import { isActive } from "../../utils/helpers";
 import { withIronSessionSsr } from "iron-session/next";
 import ironConfig from "../../utils/iron-config";
 import { format, parseISO } from "date-fns";
+import Router from "next/router";
+import useSWR from "swr";
 
-type CategoriesProps = { categories: any[] };
+const fetcher = (url: string) => axios.get(url).then((res) => res.data.items);
+
+type CategoriesProps = { data: any[] };
 const CategoriesPage: React.FunctionComponent<CategoriesProps> = (props) => {
-  const { categories } = props;
   const columns: GridColumns = [
     {
       field: "id",
@@ -47,6 +50,22 @@ const CategoriesPage: React.FunctionComponent<CategoriesProps> = (props) => {
       valueFormatter: (params) => format(parseISO(params.value), "dd/MM/yyyy"),
     },
   ];
+
+  const { data, error: _error } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_HOST}/categories`,
+    fetcher,
+    {
+      fallbackData: props.data,
+      refreshInterval: 2,
+      onError: (error) => {
+        console.error(error);
+        if (error.response.status === 401 || error.response.status === 403) {
+          Router.push("/login");
+        }
+      },
+    }
+  );
+
   return (
     <div style={{ height: 400, width: "100%" }}>
       <Typography component="h1" variant="h4">
@@ -54,7 +73,7 @@ const CategoriesPage: React.FunctionComponent<CategoriesProps> = (props) => {
       </Typography>
       <DataGrid
         columns={columns}
-        rows={categories}
+        rows={data}
         checkboxSelection
         disableSelectionOnClick
         pageSize={5}
@@ -88,7 +107,7 @@ export const getServerSideProps: GetServerSideProps = withIronSessionSsr(
 
     return {
       props: {
-        categories: items,
+        data: items,
       },
     };
   },
